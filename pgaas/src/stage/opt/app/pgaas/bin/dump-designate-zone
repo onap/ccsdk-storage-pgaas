@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+# Copyright (C) 2017 AT&T Intellectual Property. All rights reserved. 
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this code except in compliance
+# with the License. You may obtain a copy of the License
+# at http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software  
+# distributed under the License is distributed on an "AS IS" BASIS,  
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or  
+# implied. See the License for the specific language governing  
+# permissions and limitations under the License. 
+
+import requests, sys, os, subprocess, argparse
+
+def checkstatus(resp, msg):
+  if resp.status_code >= 300:
+    print(resp)
+    print(resp.content)
+    raise Exception(msg)
+ 
+def reportrs():
+  resp = requests.get('{0}/v2/zones/{1}/recordsets?limit=1000'.format(dns, zid), headers=osauth)
+  checkstatus(resp, 'Failed to list recordsets')
+  for rs in resp.json()['recordsets']:
+    tl = ''
+    if 'ttl' in rs and rs['ttl'] is not None:
+      tl = ' {0}'.format(rs['ttl'])
+    print('# {0}'.format(rs['id']))
+    for r in rs['records']:
+      print('{0}{1} IN {2} {3}'.format(rs['name'], tl, rs['type'], r))
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Dump a Designate zone registration")
+    parser.add_argument("-a", "--authurl", type=str, help="Authentication URL), defaults to $DESIGNATEAUTHURL")
+    parser.add_argument("-t", "--tenantname", type=str, help="Tenant name")
+    parser.add_argument("-u", "--user", type=str, help="Username, defaults to $DESIGNATEUSER") # , default=os.environ.get('DESIGNATEUSER'))
+    parser.add_argument("-p", "--password", type=str, help="Password, defaults to $DESIGNATEPASSWORD") # , default=os.environ.get('DESIGNATEPASSWORD'))
+    parser.add_argument("-d", "--domain", type=str, help="Domain to search, defaults to $DESIGNATEDOMAIN") # , default=os.environ.get('DESIGNATEDOMAIN'))
+    parser.add_argument("-T", "--timeout", type=int, help="Timeout on requests, defaults to 120", default=120) # , default=os.environ.get('DESIGNATEDOMAIN'))
+    parser.add_argument("-v", "--verbose", help="turn on debugging", action="store_true") # , default=os.environ.get('DESIGNATEURL'))
+    args = parser.parse_args()
+
+    def checkarg(arg, var, parms, dflt = None):
+      if not arg: arg = os.environ.get(var)
+      if not arg: arg = dflt
+      if not arg: exit(parms + "/$" + var + " not set")
+      return arg
+
+    args.authurl = checkarg(args.authurl, "DESIGNATEAUTHURL", "-a/--authurl")
+    args.tenantname = checkarg(args.tenantname, "DESIGNATETENANTNAME", "-t/--tenantname")
+    args.user = checkarg(args.user, "DESIGNATEUSER", "-u/--user")
+    args.password = checkarg(args.password, "DESIGNATEPASSWORD", "-p/--password")
+    args.domain = checkarg(args.domain, "DESIGNATEDOMAIN", "-d/--domain", subprocess.run(['dnsdomainname'], stdout=subprocess.PIPE).stdout.decode('utf-8').rstrip())
+    if not args.domain.endswith("."): args.domain = args.domain + "."
+
+    print("Domain = {0}".format(args.domain))
+
+    resp = requests.post(args.authurl + '/tokens', json={'auth':{'tenantName': args.tenantname, 'passwordCredentials': {'username': args.user, 'password': args.password }}}, timeout=args.timeout)
+    checkstatus(resp, 'Failed to get identity token')
+    respj = resp.json()['access']
+    osauth = {'X-Auth-Token': respj['token']['id'] }
+    dns = None
+    for se in respj['serviceCatalog']:
+      if se['type'] == 'dns':
+        dns = se['endpoints'][0]['publicURL']
+        break
+    if not dns:
+      printf("No dns record found")
+    else:
+      print('DNS is {0}'.format(dns))
+
+      resp = requests.get('{0}/v2/zones'.format(dns), headers=osauth, timeout=args.timeout)
+      checkstatus(resp, 'Failed to list zones')
+      respj = resp.json()['zones']
+      zid = None
+      for z in respj:
+        if args.verbose: print("Looking at %s" % z, file=sys.stderr)
+        if z['name'] == args.domain:
+          zid = z['id']
+          break
+
+      if not zid:
+        print("Domain {0} not found".format(args.domain))
+      else:
+        print('Zone is {0}'.format(zid))
+        reportrs()

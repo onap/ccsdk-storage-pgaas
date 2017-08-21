@@ -1,0 +1,259 @@
+#!/bin/bash
+# Copyright (C) 2017 AT&T Intellectual Property. All rights reserved. 
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this code except in compliance
+# with the License. You may obtain a copy of the License
+# at http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software  
+# distributed under the License is distributed on an "AS IS" BASIS,  
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or  
+# implied. See the License for the specific language governing  
+# permissions and limitations under the License. 
+
+echo "================ $0 ================"
+id
+set -x
+
+die()
+{
+    echo "$@" 1>&2
+    echo $0: "$@"
+    umask 022
+    echo $0: "$@" >> /tmp/pgaas-failures
+    exit 1
+}
+
+umask 022
+
+TMP=$( mktemp /tmp/pgprep.$$.XXXXXXXXXX )
+trap 'rm -f $TMP' 0 1 2 3 15
+
+if $ONAP
+then INSTALL_ROOT=
+fi
+
+
+# There needs to be a configuration file passed in, named something like pgaas-postgres.conf
+# and stored either in /var/config/DCAE/chef or /tmp. We need at least one, and there cannot
+# be more than one within the directory. (If one exists in both /var/config and /tmp, we trust
+# the one in /var/config.)
+#
+# The variable "master" needs to be in xyz-postgres.conf. It should be the hostname or 
+# hostname -f value of the VM that is the initial PG master.
+# In addition, the following values could be in postgres.conf or
+# already in the environment:
+#    DRTR_NODE_KSTOREFILE: /opt/app/dcae-certificate/keystore.jks
+#    DRTR_NODE_KSTOREPASS: "No Certificate"
+#    DRTR_NODE_PVTKEYPASS: "No Certificate"
+#    PG_NODES : uiopmno1qwpstg00.research.example.com|asbczw1vepstg00.dcae.simpledemo.onap.org
+#    PG_JAVA_HOME : /opt/app/java/jdk/jdk170
+#    PG_CLUSTER : global/central | site/edge (pick one)
+
+CONFDIR1=/var/config/DCAE/chef
+CONFDIR2=/tmp
+CONFCOUNT1=$(ls $CONFDIR1/*-postgres.conf 2>/dev/null | wc -l)
+CONFCOUNT2=$(ls $CONFDIR2/*-postgres.conf 2>/dev/null | wc -l)
+CONFCOUNTBOTH=$(ls $CONFDIR1/*-postgres.conf $CONFDIR2/*-postgres.conf 2>/dev/null | wc -l)
+
+if [ $CONFCOUNTBOTH -eq 0 ]
+then
+    die "No xyz-postgres.conf files were found in $CONFDIR1 or $CONFDIR2"
+else
+    if [ $CONFCOUNT1 -eq 1 ]
+    then CONFDIR=$CONFDIR1
+    elif [ $CONFCOUNT2 -eq 1 ]
+    then CONFDIR=$CONFDIR2
+    else CONFDIR=
+    fi
+    if [ -n "$CONFDIR" ]
+    then # OpenDCAE/ONAP
+	cat $CONFDIR/*-postgres.conf |
+	    sed -e 's/ *: */="/' -e 's/[ 	]*$/"/' -e 's/=""/="/' -e 's/""$/"/' > $TMP
+	. $TMP
+    else
+	if [ $CONFCOUNT1 -gt 1 ]
+	then die "More than one postgres.conf was found in $CONFDIR1: $(ls $CONFDIR1/*-postgres.conf 2>&1)"
+	elif [ $CONFCOUNT2 -gt 1 ]
+	then die "More than one postgres.conf was found in $CONFDIR2: $(ls $CONFDIR2/*-postgres.conf 2>&1)"
+	fi
+    fi
+fi
+
+[ -n "$PG_NODES" ] || die "PG_NODES is not set"
+[ -n "$PG_CLUSTER" ] || die "PG_CLUSTER is not set"
+[ -n "$DRTR_NODE_KSTOREFILE" ] || die "DRTR_NODE_KSTOREFILE is not set"
+[ -n "$DRTR_NODE_KSTOREPASS" ] || die "DRTR_NODE_KSTOREPASS is not set"
+[ -n "$DRTR_NODE_PVTKEYPASS" ] || die "DRTR_NODE_PVTKEYPASS is not set"
+
+# create various directories with proper permissions
+mkdir -p ${INSTALL_ROOT}/dbroot/pgdata/main \
+    ${INSTALL_ROOT}/dbroot/pgdata/pgaas \
+    ${INSTALL_ROOT}/dbroot/pglogs/main \
+    ${INSTALL_ROOT}/var/run/postgresql \
+    ${INSTALL_ROOT}/opt/logs/dcae/postgresql/init \
+    ${INSTALL_ROOT}/opt/logs/dcae/postgresql/server \
+    ${INSTALL_ROOT}/opt/logs/dcae/postgresql/idns 
+chmod 700 ${INSTALL_ROOT}/dbroot/pgdata/pgaas 
+chmod 700 ${INSTALL_ROOT}/dbroot/pglogs
+chmod 700 ${INSTALL_ROOT}/dbroot/pgdata/main
+
+if $ONAP
+then
+    if [ -d /var/lib/postgresql/9.5 ]
+    then VER=9.5
+    elif [ -d /var/lib/postgresql/9.6 ]
+    then VER=9.6
+    else die "Cannot determine version of PostgreSQL. Looking for /var/lib/postgresql/9.[56]."
+    fi
+    mv /var/lib/postgresql/$VER/main /var/lib/postgresql/$VER/main.sv
+    ln -s /dbroot/dbdata/main /var/lib/postgresql/$VER/main
+
+    mv /etc/postgresql/$VER/main /etc/postgresql/$VER/main.sv
+    ln -s /opt/app/pgaas/main /etc/postgresql/$VER/main
+
+fi
+
+chown -R postgres:postgres ${INSTALL_ROOT}/dbroot ${INSTALL_ROOT}/var/run/postgresql ${INSTALL_ROOT}/opt/logs/dcae/postgresql
+
+chmod 711 ~postgres
+if [ -d /opt/app/postgresql-9.5.2 ]
+then PGDIR=/opt/app/postgresql-9.5.2
+elif [ -d /usr/lib/postgresql/9.6 ]
+then PGDIR=/usr/lib/postgresql/9.6
+elif [ -d /usr/lib/postgresql/9.5 ]
+then PGDIR=/usr/lib/postgresql/9.5
+else echo PostgreSQL bin directory not found 1>&2; exit 1
+fi
+chmod 751 $PGDIR/bin
+
+# fix up the CDF package so that it works
+if [ ! -L /opt/cdf ]
+then rm -f /opt/cdf; ln -sf /opt/app/cdf /opt/cdf
+fi
+
+PATH=${INSTALL_ROOT}/opt/app/pgaas/bin:$PATH
+
+# and save some values within
+(
+    echo "allpgnodes=\"$PG_NODES\""
+    case "$PG_CLUSTER" in
+	global | central )
+	    cnodes=$( gen-repmgr-info -n "$PG_NODES" -p )
+	    echo "pgnodes=\"$cnodes\""
+	    echo "cluster=central"
+	    shanodes=$( gen-repmgr-info -n "$PG_NODES" -P )
+	    ;;
+        site | edge )
+	    HOSTNAME=$( hostname -f )
+	    lnodes=$( gen-repmgr-info -n "$PG_NODES" -e $HOSTNAME )
+	    echo "pgnodes=\"$lnodes\""
+	    if [ -z "$lnodes" ]
+	    then die "Cannot determine the name of the system. hostname -f ($HOSTNAME) is not found in PG_NODES ($PG_NODES)"
+	    fi
+	    shanodes=$( gen-repmgr-info -n "$PG_NODES" -E $HOSTNAME )
+	    echo "cluster=edge"
+	    ;;
+        * ) die "Cannot determine what type of cluster this is. PG_CLUSTER should be either 'global/central' or 'site/edge'" ;;
+    esac
+
+    echo "drtr_node_kstorefile=$DRTR_NODE_KSTOREFILE"
+    echo "ENCRYPTME.AES.drtr_node_kstorepass='$DRTR_NODE_KSTOREPASS'" | ${INSTALL_ROOT}/opt/app/cdf/bin/setencryptedvalues
+    echo "ENCRYPTME.AES.drtr_node_pvtkeypass='$DRTR_NODE_PVTKEYPASS'" | ${INSTALL_ROOT}/opt/app/cdf/bin/setencryptedvalues
+    echo "ENCRYPTME.AES.wgetpswd=$shanodes" | ${INSTALL_ROOT}/opt/app/cdf/bin/setencryptedvalues
+) >> ${INSTALL_ROOT}/opt/app/cdf/lib/cdf.cfg
+
+# install the init scripts for postgresql
+# init.d-pgaas init-pgaas-idns.conf init-pgaas-init.conf logrotate
+
+INIT=${INSTALL_ROOT}/opt/app/pgaas/init
+
+# take care of cron jobs
+if [ -d ${INSTALL_ROOT}/opt/app/platform/cron ]
+then
+    CRONDIR=${INSTALL_ROOT}/opt/app/platform/cron/postgres
+    mkdir -p $CRONDIR
+    chown postgres:postgres $CRONDIR
+    chmod 755 $CRONDIR
+    cp $INIT/pglogs.cron $CRONDIR/pglogs.cron
+    su postgres -c "sh -x ${INSTALL_ROOT}/opt/app/platform/bin/mergeCron"
+else
+    su postgres -c "crontab $INIT/pglogs.cron"
+fi
+
+# take care of PGaaS init job
+if [ -d ${INSTALL_ROOT}/opt/app/platform/init.d ]
+then
+    INITDEST=${INSTALL_ROOT}/opt/app/platform/init.d/pgaas
+    cp $INIT/init.d-pgaas $INITDEST
+    chown postgres:postgres $INITDEST
+    chmod 755 $INITDEST
+else
+    cd ${INSTALL_ROOT}/opt/app/platform/rc.d
+    ln -sf ../init.d/pgaas K20pgaas
+    ln -sf ../init.d/pgaas S20pgaas
+fi
+
+# take care of /var/run/postgresql directory
+if [ -f /usr/lib/tmpfiles.d/postgresql.conf ]
+then
+    : # no need to create the /var/run/postgresql directory (probably because postgresql package already did it)
+elif [ -d /usr/lib/tmpfiles.d ]
+then
+    (
+	echo "# Directory for PostgreSQL sockets, lockfiles and stats tempfiles"
+	echo "d /var/run/postgresql 2775 postgres postgres - -"
+    ) > /usr/lib/tmpfiles.d/postgresql.conf
+else
+    # install an init script to create it
+    cp $INIT/init-pgaas-init.conf ${INSTALL_ROOT}/etc/init/pgaas-init.conf
+    service pgaas-init stop
+    sleep 1
+    service pgaas-init start
+    sleep 1
+fi
+# double check to make sure it's been created
+if [ ! -d /var/run/postgresql ]
+then
+    mkdir -p /var/run/postgresql
+    chown postgres:postgres /var/run/postgresql
+fi
+
+# take care of iDNS-responder
+if [ -d /lib/systemd/system -a -f /bin/systemctl ]
+then
+    # install the init script for iDNS in systemd
+    cp $INIT/systemd-pgaas-idns.service /lib/systemd/system/pgaas-idns.service
+#    if [ -f /usr/sbin/service ]
+#    then
+#        service pgaas-idns stop
+#        sleep 1
+#        service pgaas-idns start
+#    else
+#        systemctl stop pgaas-idns 
+        sleep 1
+	systemctl daemon-reload
+        sleep 1
+        systemctl enable pgaas-idns 
+        sleep 1
+        systemctl start pgaas-idns 
+#    fi
+
+else
+    # install the init script for iDNS in upstart
+    cp $INIT/init-pgaas-idns.conf ${INSTALL_ROOT}/etc/init/pgaas-idns.conf
+    service pgaas-idns stop
+    sleep 1
+    service pgaas-idns start
+fi
+
+# take care of log rotation
+cp $INIT/logrotate ${INSTALL_ROOT}/etc/logrotate.d/pgaas
+chown root:root ${INSTALL_ROOT}/etc/logrotate.d/pgaas
+chmod 644 ${INSTALL_ROOT}/etc/logrotate.d/pgaas
+
+chown -R postgres:postgres ${INSTALL_ROOT}/opt/app/pgaas
+
+echo ENDING $0 $(date)
+echo ENDING $0 $(date) >> /tmp/pgaas.inst.report

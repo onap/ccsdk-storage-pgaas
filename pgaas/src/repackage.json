@@ -1,0 +1,32 @@
+{
+    "maintainer": "ONAP <dcae@lists.onap.org>",
+    "version": "${RELLONG}",
+    "applicationName": "pgaas",
+    "internalDependencies": [],
+    "executionGroup": "root",
+    "debian": {
+        "externalDependencies": [
+            {
+                "cdf": ">= ${RELLONG}"
+            },
+            {
+                "postgresql": ">= 9.5"
+            }
+        ],
+        "conflicts": [],
+        "groupId": "org.onap.dcae.storage.pgaas",
+        "replaces": []
+    },
+    "docker": {
+        "externalDependencies": [],
+        "tag": "latest"
+    },
+    "fileGroup": "postgres",
+    "directoryTreeTops": {
+        "/opt": "/opt/app/pgaas"
+    },
+    "fileUser": "postgres",
+    "executionUser": "root",
+    "groupId": "org.onap.dcae.storage.pgaas",
+    "description": " PostgreSQL as a Service main scripts "
+}

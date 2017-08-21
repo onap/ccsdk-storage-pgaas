@@ -1,0 +1,196 @@
+rm -rf ../install/stage
+rm -rf ../install/common
+mkdir -p ../install
+cd stage/opt/app/pgaas && make stage STAGEDIR=../../../../../install/stage
+make[1]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas'
+for i in bin lib etc man init main; do \
+		( cd $i && make stage STAGEDIR=../../../../../../install/stage ) \
+	done
+make[2]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/bin'
+rm -rf ../../../../../../install/stage//opt/app/pgaas/bin
+mkdir -p ../../../../../../install/stage//opt/app/pgaas/bin
+for i in *; do \
+	    case $i in \
+		*.py ) \
+		    j=`basename $i .py`; \
+		    cp $i ../../../../../../install/stage//opt/app/pgaas/bin/$j; \
+		    chmod a+x ../../../../../../install/stage//opt/app/pgaas/bin/$j; \
+		    ;; \
+		makefile | *~ ) ;; \
+		* ) \
+		    if [ -f $i ]; then \
+		        cp $i ../../../../../../install/stage//opt/app/pgaas/bin/$i; \
+		        chmod a+x ../../../../../../install/stage//opt/app/pgaas/bin/$i; \
+		    fi; \
+		    ;; \
+	    esac; \
+	done
+make[2]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/bin'
+make[2]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/lib'
+rm -rf ../../../../../../install/stage//opt/app/pgaas/lib
+mkdir -p ../../../../../../install/stage//opt/app/pgaas/lib
+for i in *; do \
+	    case $i in \
+		*.py ) \
+		    j=`basename $i .py`; \
+		    cp $i ../../../../../../install/stage//opt/app/pgaas/lib/$j; \
+		    chmod a+x ../../../../../../install/stage//opt/app/pgaas/lib/$j; \
+		    ;; \
+		makefile | *~ ) ;; \
+		* ) \
+		    if [ -f $i ]; then \
+		        cp $i ../../../../../../install/stage//opt/app/pgaas/lib/$i; \
+		        chmod a+x ../../../../../../install/stage//opt/app/pgaas/lib/$i; \
+		    fi; \
+		    ;; \
+	    esac; \
+	done
+make[2]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/lib'
+make[2]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/etc'
+rm -rf ../../../../../../install/stage//opt/app/pgaas/etc
+mkdir -p ../../../../../../install/stage//opt/app/pgaas/etc
+for i in *; do \
+	    case $i in \
+		*.py | gen*.conf ) \
+		    j=`basename $i .py`; \
+		    cp $i ../../../../../../install/stage//opt/app/pgaas/etc/$j; \
+		    chmod a+x ../../../../../../install/stage//opt/app/pgaas/etc/$j; \
+		    ;; \
+		*.conf | *.cfg | *.cnf | *.sql ) \
+		    cp $i ../../../../../../install/stage//opt/app/pgaas/etc/$i; \
+		    chmod a+r ../../../../../../install/stage//opt/app/pgaas/etc/$i; \
+		    ;; \
+		makefile | *~ ) ;; \
+		* ) \
+		    if [ -f $i ]; then \
+		        cp $i ../../../../../../install/stage//opt/app/pgaas/etc/$i; \
+		        chmod a+rx ../../../../../../install/stage//opt/app/pgaas/etc/$i; \
+		    fi; \
+		    ;; \
+	    esac; \
+	done
+make[2]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/etc'
+make[2]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/man'
+rm -rf ../../../../../../install/stage//opt/app/pgaas/man
+mkdir -p ../../../../../../install/stage//opt/app/pgaas/man
+cp -p check_cluster.1 dcae_admin_db.1 isrw.1 list_masters.1 pg_ctl_promote.1 pg_ctl_restart.1 pg_ctl_start.1 pg_ctl_status.1 pg_ctl_stop.1 repmgrc.1 repmgrdc.1 runpsqll.1 runpsql.1 setpropvalue.1 show_pg_is_in_recovery.1 show_pg_stat_activity.1 show_pg_stat_archiver.1 show_pg_stat_bgwriter.1 show_pg_stat_database_conflicts.1 show_pg_stat_database.1 show_pg_statio_user_functions.1 show_pg_statio_user_indexes.1 show_pg_statio_user_sequences.1 show_pg_statio_user_tables.1 show_pg_stat_user_indexes.1 show_pg_stat_user_tables.1 start_maintenance_mode.1 startpsql.1 stop_maintenance_mode.1 update_var_run_isrw.1 ../../../../../../install/stage//opt/app/pgaas/man
+make[2]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/man'
+make[2]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/init'
+rm -rf ../../../../../../install/stage//opt/app/pgaas/init
+mkdir -p ../../../../../../install/stage//opt/app/pgaas/init
+for i in *; do \
+	    case $i in \
+		*.py ) \
+		    j=`basename $i .py`; \
+		    cp $i ../../../../../../install/stage//opt/app/pgaas/init/$j; \
+		    chmod a+x ../../../../../../install/stage//opt/app/pgaas/init/$j; \
+		    ;; \
+		makefile | *~ ) ;; \
+		* ) \
+		    if [ -f $i ]; then \
+		        cp $i ../../../../../../install/stage//opt/app/pgaas/init/$i; \
+		        chmod a+x ../../../../../../install/stage//opt/app/pgaas/init/$i; \
+		    fi; \
+		    ;; \
+	    esac; \
+	done
+make[2]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/init'
+make[2]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/main'
+rm -rf ../../../../../../install/stage//opt/app/pgaas/main
+mkdir -p ../../../../../../install/stage//opt/app/pgaas/main
+for i in *; do \
+	    case $i in \
+		*.py ) \
+		    j=`basename $i .py`; \
+		    cp $i ../../../../../../install/stage//opt/app/pgaas/main/$j; \
+		    chmod a+x ../../../../../../install/stage//opt/app/pgaas/main/$j; \
+		    ;; \
+		makefile | *~ ) ;; \
+		* ) \
+		    if [ -f $i ]; then \
+		        cp $i ../../../../../../install/stage//opt/app/pgaas/main/$i; \
+		        chmod a+x ../../../../../../install/stage//opt/app/pgaas/main/$i; \
+		    fi; \
+		    ;; \
+	    esac; \
+	done
+make[2]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/main'
+for i in lib/gif; do \
+		( cd $i && make stage STAGEDIR=../../../../../../../install/stage ) \
+	done
+make[2]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/lib/gif'
+mkdir -p ../../../../../../../install/stage//opt/app/pgaas/lib/gif
+for i in *; do \
+	    case $i in \
+		*.py ) \
+		    j=`basename $i .py`; \
+		    cp $i ../../../../../../../install/stage//opt/app/pgaas/lib/gif/$j; \
+		    chmod a+x ../../../../../../../install/stage//opt/app/pgaas/lib/gif/$j; \
+		    ;; \
+		makefile | *~ ) ;; \
+		* ) \
+		    cp $i ../../../../../../../install/stage//opt/app/pgaas/lib/gif/$i; \
+		    chmod a+x ../../../../../../../install/stage//opt/app/pgaas/lib/gif/$i; \
+		    ;; \
+	    esac; \
+	done
+make[2]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/lib/gif'
+# ATT-ONLY CODE BEGIN
+for i in bin/internal-only man/internal-only; do \
+		( cd $i && make stage STAGEDIR=../../../../../../../install/stage ) \
+	done
+make[2]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/bin/internal-only'
+mkdir -p ../../../../../../../install/stage//opt/app/pgaas/bin
+for i in *; do \
+	    case $i in \
+		*.py ) \
+		    j=`basename $i .py`; \
+		    cp $i ../../../../../../../install/stage//opt/app/pgaas/bin/$j; \
+		    chmod a+x ../../../../../../../install/stage//opt/app/pgaas/bin/$j; \
+		    ;; \
+		makefile | *~ ) ;; \
+		* ) \
+		    cp $i ../../../../../../../install/stage//opt/app/pgaas/bin/$i; \
+		    chmod a+x ../../../../../../../install/stage//opt/app/pgaas/bin/$i; \
+		    ;; \
+	    esac; \
+	done
+make[2]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/bin/internal-only'
+make[2]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/man/internal-only'
+mkdir -p ../../../../../../../install/stage//opt/app/pgaas/man
+cp -p rotate_db_tables.1 vi_proc_out.1 ../../../../../../../install/stage//opt/app/pgaas/man
+make[2]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas/man/internal-only'
+# ATT-ONLY CODE END
+make[1]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/stage/opt/app/pgaas'
+cd testlock && make stage STAGEDIR=../../install/stage DISTPATH=opt/app/pgaas
+make[1]: Entering directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/testlock'
+cp -p testlock ../../install/stage/opt/app/pgaas/bin/testlock
+chmod a+x ../../install/stage/opt/app/pgaas/bin/testlock
+make[1]: Leaving directory `/home/th1395/pgaas/com.att.ecomp.dcae.storage/PGaaS/pgaas/src/testlock'
+find common ! -name makefile ! -name '*~' | cpio -pudmv ../install
+../install/common
+../install/common/postinst
+3 blocks
+sed 's/${RELLONG}/17.10.0/' < repackage.yaml > ../install/repackage.yaml
+repackage -b swm  -d ../install -y ../install/repackage.yaml
+0 blocks
+Initializing...
+
+Component Type: SWM
+Package Create Started for: com.att.ecomp.dcae.storage.pgaas:pgaas:17.10.0-20170629185041
+Preparing File Group [Linux]
+Creating a singleton package
+Creating bundle files
+Publishing into inventory
+Uploading to repository
+Complete
+--------------------------------------------------------------------------------
+Successful - Elapsed Time Millis: [7581]
+--------------------------------------------------------------------------------
+Initializing...
+
+--------------------------------------------------------------------------------
+Successful - Elapsed Time Millis: [4992]
+--------------------------------------------------------------------------------
+2017-06-29 18:50:41:INFO:Building a SWM package ...
+../../bin/mark-swm-repackage 17.10.0
