@@ -37,13 +37,15 @@ usage()
     echo -e "-H\tFQDN of host to copy from"
     echo -e "-P\tport of database being copied from"
     echo -e "-U\tUSER to login as on remote host being copied from"
-    echo -e "-U\tDB database on host to be copied from"
+    echo -e "-W\tPASSWORD to use to login as on remote host being copied from"
+    echo -e "-D\tDB database on host to be copied from"
     echo -e "-A\tcopy data only"
     echo -e "-S\tcopy schema only"
     echo -e "-h\tFQDN of host to copy to"
     echo -e "-p\tport of database being copied to"
     echo -e "-u\tUSER to login as on host being copied to"
-    echo -e "-u\tDB database on host to be copied to"
+    echo -e "-w\tPASSWORD to use to login as on host being copied to"
+    echo -e "-d\tDB database on host to be copied to"
     exit 1
 }
 
@@ -52,13 +54,15 @@ REMOTESCHEMAONLY=
 REMOTEHOST=
 REMOTEPORT=
 REMOTEUSER=
+REMOTEPASSWORD=
 REMOTEDB=
 LOCALHOST=
 LOCALPORT=
 LOCALUSER=
 LOCALDB=
+LOCALPASSWORD
 
-while getopts ASH:P:U:D:h:p::u:d: c
+while getopts ASH:P:U:W:D:h:p::u:w:d: c
 do
   case $c in
       A ) REMOTEDATAONLY=-a ;;
@@ -66,10 +70,12 @@ do
       H ) REMOTEHOST=$OPTARG ;;
       P ) REMOTEPORT=$OPTARG ;;
       U ) REMOTEUSER=$OPTARG ;;
+      W ) REMOTEPASSWORD=$OPTARG ;;
       D ) REMOTEDB=$OPTARG;;
       h ) LOCALHOST=$OPTARG ;;
       p ) LOCALPORT=$OPTARG ;;
       u ) LOCALUSER=$OPTARG ;;
+      w ) LOCALPASSWORD=$OPTARG ;;
       d ) LOCALDB=$OPTARG;;
   esac
 done
@@ -79,10 +85,13 @@ done
 [ -z "$REMOTEPORT" ] && usage "Missing -P option"
 [ -z "$REMOTEUSER" ] && usage "Missing -U option"
 [ -z "$REMOTEDB" ] && usage "Missing -D option"
+[ -z "$REMOTEPASSWORD" ] && usage "Missing -W option"
 [ -z "$LOCALHOST" ] && usage "Missing -h option"
 [ -z "$LOCALPORT" ] && usage "Missing -p option"
 [ -z "$LOCALUSER" ] && usage "Missing -u option"
+[ -z "$LOCALPASSWORD" ] && usage "Missing -w option"
 [ -z "$LOCALDB" ] && usage "Missing -d option"
 [ -n "$REMOTEDATAONLY" -a -n "$REMOTESCHEMAONLY" ] && usage "Either -A or -S may be specified, but not both"
 
-pg_dump -C $REMOTEDATAONLY $REMOTESCHEMAONLY -h $REMOTEHOST -U $REMOTEUSER $REMOTEDB | psql -h $LOCALHOST -U $LOCALUSER $LOCALDB
+PGPASSWORD="$REMOTEPASSWORD" pg_dump -C $REMOTEDATAONLY $REMOTESCHEMAONLY -h $REMOTEHOST -U $REMOTEUSER $REMOTEDB | 
+PGPASSWORD="$LOCALPASSWORD"  psql                                         -h $LOCALHOST  -U $LOCALUSER  $LOCALDB

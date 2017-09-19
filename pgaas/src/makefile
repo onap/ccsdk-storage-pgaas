@@ -23,7 +23,7 @@ clean-testlock:
 	cd testlock && $(MAKE) clobber
 
 clean: clean-ins clean-testlock
-	rm -rf *~
+	rm -rf *~ nohup.out
 
 testlock/testlock:
 	cd testlock && $(MAKE) testlock
@@ -38,9 +38,8 @@ stage: build clean-stage clean-common
 
 
 debian: stage
-	sed 's/$${RELLONG}/$(RELLONG)/' < repackage.yaml > $(INS)/repackage.yaml
-	# repackage -b debian $(REPACKAGEDEBIANOPTS) -d $(INS) -u -M "{datetime},LATEST" -y $(INS)/repackage.yaml
-	repackage -b debian $(REPACKAGEDEBIANOPTS) -d $(INS) -u -M "LATEST" -y $(INS)/repackage.yaml
+	sed 's/$${RELLONG}/'"$$MVN_VERSION_ONLY/" < repackage.json > $(INS)/repackage.json
+	repackage -b debian $(REPACKAGEDEBIANOPTS) -d $(INS) -u -X "{appname}.{suffix},{appname}.{suffix}-{version},{appname}.{suffix}-{version}-{datetime}" -y $(INS)/repackage.json
 	@echo debian built
 
 upload-javadocs:

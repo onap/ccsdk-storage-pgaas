@@ -110,14 +110,21 @@ esac
 #### fi
 
 SHOWDF=false
+SHOWMOUNT=false
 for i in /opt/tools /opt/logs /dbroot/pgdata /dbroot/pglogs /dbroot/pgbackup
 do
     if df -h 2>&1 | grep " $i"'$' > /dev/null
     then verified "$i has its own filesystem"
     else failed "$i does not have its own filesystem"; SHOWDF=true
     fi
+
+    if mount | grep "^$i " | grep rw > /dev/null
+    then verified "$i is on a read-write filesystem"
+    else failed "$i is not on a read-write filesystem"; SHOWMOUNT=true
+    fi
 done
 $SHOWDF && tabtext "$(df -h 2>&1)"
+$SHOWMOUNT && tabtext "$(mount 2>&1)"
 
 if grep '^postgres:' /etc/passwd > /dev/null
 then verified "postgres user exists"

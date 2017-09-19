@@ -1,29 +1,29 @@
 {
+    "applicationName": "cdf",
     "debian": {
-        "groupId": "org.onap.dcae.storage.pgaas",
         "conflicts": [],
-        "replaces": [],
         "externalDependencies": [
             {
                 "libgetopt-java": ">= 1.0.14"
             }
-        ]
+        ],
+        "groupId": "org.onap.dcae.storage.pgaas",
+        "replaces": []
     },
-    "fileGroup": "postgres",
-    "internalDependencies": [],
-    "fileUser": "postgres",
-    "executionUser": "postgres",
-    "executionGroup": "postgres",
-    "docker": {
-        "tag": "latest",
-        "externalDependencies": []
-    },
-    "version": "${RELLONG}",
+    "description": " PostgreSQL as a Service main scripts ",
     "directoryTreeTops": {
         "/opt": "/opt/app/cdf"
     },
-    "maintainer": "ONAP <dcae@lists.onap.org>",
+    "docker": {
+        "externalDependencies": [],
+        "tag": "latest"
+    },
+    "executionGroup": "postgres",
+    "executionUser": "postgres",
+    "fileGroup": "postgres",
+    "fileUser": "postgres",
     "groupId": "org.onap.dcae.storage.pgaas",
-    "applicationName": "cdf",
-    "description": " PostgreSQL as a Service main scripts "
+    "internalDependencies": [],
+    "maintainer": "ONAP <dcae@lists.onap.org>",
+    "version": "${RELLONG}"
 }

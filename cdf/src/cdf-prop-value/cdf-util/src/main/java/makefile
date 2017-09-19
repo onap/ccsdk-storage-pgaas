@@ -1,5 +1,4 @@
-
-go=../../../../buildjars/gnu_getopt.jar
+go=$$(find ~/.m2 -name '*getopt*.jar' | tail -1)
 
 .SUFFIXES= .class
 
@@ -26,13 +25,15 @@ JAVA=	org/onap/dcae/cdf/util/common/Classify.java \
 
 CLASSES=$(JAVA:.java=.class)
 
+JAR=cdf-util.jar
+
 all:
 
-build: cdf-util.jar
+build: $(JAR)
 
-cdf-util.jar: $(CLASSES)
-	rm -f cdf-util.jar
-	jar cvf cdf-util.jar $(CLASSES)
+$(JAR): $(CLASSES)
+	rm -f $(JAR)
+	jar cvf $(JAR) $(CLASSES)
 
 clean: 
 	find . -name '*.class' -exec rm -f {} +
@@ -42,7 +43,7 @@ $(CLASSES): $(JAVA)
 	javac -cp $(go) $(JAVA)
 
 javadocs: javadocs.built
-javadocs.built: cdf-util.jar
+javadocs.built: $(JAR)
 	rm -rf javadoc
 	mkdir -p javadoc
 	javadoc -d javadoc -classpath $(go) $(JAVA)

@@ -1,4 +1,4 @@
-go=../../../../buildjars/gnu_getopt.jar
+go=$$(find ~/.m2 -name '*getopt*.jar' | tail -1)
 cu=../../../../cdf-util/src/main/java/cdf-util.jar
 
 .SUFFIXES= .class
@@ -6,25 +6,27 @@ cu=../../../../cdf-util/src/main/java/cdf-util.jar
 JAVA=org/onap/dcae/cdf/CdfPropValue.java
 CLASSES=$(JAVA:.java=.class)
 
+JAR=cdf-prop-value.jar
+
 all:
 
-build: cdf-prop-value.jar
+build: $(JAR)
 
 classes: $(CLASSES)
 
 clean:
 	find . -name '*.class' -exec rm -f {} +
-	rm -rf javadoc javadoc.built
+	rm -rf javadoc javadocs.built $(JAR)
 
-cdf-prop-value.jar: $(CLASSES)
-	rm -f cdf-prop-value.jar
-	jar cvf cdf-prop-value.jar $(CLASSES)
+$(JAR): $(CLASSES)
+	rm -f $(JAR)
+	jar cvf $(JAR) $(CLASSES)
 
 $(CLASSES): $(JAVA)
 	javac -cp $(go):$(cu) $(JAVA)
 
 javadocs: javadocs.built
-javadocs.built: cdf-prop-value.jar
+javadocs.built: $(JAR)
 	rm -rf javadoc
 	mkdir -p javadoc
 	javadoc -d javadoc -classpath $(go):$(cu) $(JAVA)
