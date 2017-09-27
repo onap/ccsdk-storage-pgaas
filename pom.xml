@@ -13,6 +13,7 @@
   </parent -->
   <groupId>org.onap.ccsdk.storage-pgaas</groupId>
   <artifactId>pgaas</artifactId>
+  <packaging>pom</packaging>
   <name>ccsdk-storage-pgaas</name>
   <version>1.0.0-SNAPSHOT</version>
   <url>http://maven.apache.org</url>
