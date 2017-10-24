@@ -58,9 +58,11 @@ deploy:
 	REPO=$$MVN_NEXUSPROXY/content/sites/raw/$$MVN_PROJECT_GROUPID/$$subdir/debs ; \
 	REPO2=$$MVN_NEXUSPROXY/content/sites/raw/$$MVN_PROJECT_GROUPID/debs ; \
 	REPO3=$$MVN_NEXUSPROXY/content/sites/raw/$$MVN_PROJECT_GROUPID/plugins/pgaas ; \
-	export REPACKAGEDEBIANUPLOAD="set -x; curl -X PUT -H 'Content-Type:application/octet-stream' --netrc --upload-file '{0}' --url '$$REPO/{1}'" ; \
-	export REPACKAGEDEBIANUPLOAD2="set -x; curl -X PUT -H 'Content-Type:application/octet-stream' --netrc --upload-file '{0}' --url '$$REPO2/{1}'" ; \
-	export REPACKAGEDEBIANUPLOAD3="set -x; curl -X PUT -H 'Content-Type:application/octet-stream' --netrc --upload-file '{0}' --url '$$REPO3/{1}'" ; \
+	REPO4=$$MVN_NEXUSPROXY/content/sites/raw/$$MVN_PROJECT_GROUPID/plugins ; \
+	export REPACKAGEDEBIANUPLOAD="set -x; curl -v -X PUT -H 'Content-Type:application/octet-stream' --netrc --upload-file '{0}' --url '$$REPO/{1}'" ; \
+	export REPACKAGEDEBIANUPLOAD2="set -x; curl -v -X PUT -H 'Content-Type:application/octet-stream' --netrc --upload-file '{0}' --url '$$REPO2/{1}'" ; \
+	export REPACKAGEDEBIANUPLOAD3="set -x; curl -v -X PUT -H 'Content-Type:application/octet-stream' --netrc --upload-file '{0}' --url '$$REPO3/{1}'" ; \
+	export REPACKAGEDEBIANUPLOAD4="set -x; curl -v -X PUT -H 'Content-Type:application/octet-stream' --netrc --upload-file '{0}' --url '$$REPO4/{1}'" ; \
 	export PATH=$$PATH:$$(pwd)/bin; \
 	env | sort ; \
 	for i in $(STAGEDIRS); do ( cd $$i/src && $(MAKE) debian ) done
