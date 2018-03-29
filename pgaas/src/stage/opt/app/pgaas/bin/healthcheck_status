@@ -1,3 +1,0 @@
-curl http://localhost:8000/healthcheck/status
-curl http://localhost:8000/healthcheck/writablestatus
-curl http://localhost:8000/healthcheck/readonlystatus

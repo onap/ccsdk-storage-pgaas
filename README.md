@@ -1,17 +1,7 @@
 # PostgreSQL as a Service (PGaaS) DB VM.
 
-This package is built on top of the stock PostgreSQL and Repmgr packages.
+This package is not being used in R2 Beijing because of the move to Kubernetes with OOM.
 
-PGaaS contains a set of configuration scripts, daemons, and administrative scripts
-that allow PostgreSQL to be deployed, configured and managed by the DCAE Controller.
-PGaaS may be deployed singly or in a cascaded cluster.
+If you need this package, use the R1 Amsterdam release packages.
 
-The running daemons provide health check and other information suitable for the
-DCAE Controller and future dashboard access.
-
-
-## Building the Code
-
-To build the code, use the "make build" command.
-
-To build the code and upload to a debian repository, use the "make debian" command.
+I'm not removing the repo though because it is likely that we will need to add things in R3 Casablanca.

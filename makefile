@@ -1,7 +1,7 @@
 
 all:
 
-STAGEDIRS=cdf pgaas
+STAGEDIRS=
 
 build:
 	@echo "================ make build ================"
@@ -45,6 +45,9 @@ install:
 	@echo "================ make install ================"
 
 deploy:
+	@echo "================ make deploy ================"
+
+olddeploy:
 	@echo "================ make deploy ================"
 	rm -f $$HOME/.netrc ; \
 	REPO=$$MVN_NEXUSPROXY/content/sites/raw/$$MVN_PROJECT_GROUPID ; \

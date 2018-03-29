@@ -1,5 +1,0 @@
-ls: cannot access ../man/gen-repmgr-info.man: No such file or directory
-ls: cannot access ../man/pgaas-verify-install.man: No such file or directory
-ls: cannot access ../man/pgwget.man: No such file or directory
-ls: cannot access ../man/repmgrd-status-changes.man: No such file or directory
-ls: cannot access ../man/verify_pg_privileges.man: No such file or directory
